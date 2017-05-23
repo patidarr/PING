@@ -31,7 +31,7 @@ ping_extractor <- function(
     
     dir.create(results.directory, showWarnings = F)
     
-    cat("PING_sequences/ directory created.\n\n")
+    cat(paste(results.directory," directory created.\n\n"))
   }
   
   get_sequence_list <- function(folder.name = sample.location, file.pattern = fastq.pattern.1) {
@@ -69,8 +69,8 @@ ping_extractor <- function(
       bt2_2 <- paste0("-2 ", sample.location, sequence, fastq.pattern.2)
       
       sequence <- last(unlist(strsplit(sequence, "/")))
-      bt2_stream <- paste0("-S ", sequence, ".temp")
-      
+      bt2_stream <- paste0("-S ", results.directory ,sequence, ".temp")
+       
       
       if(is_gz){
         bt2_al_conc <- paste0("--al-conc-gz ", results.directory, sequence, "_KIR_%.fastq.gz")
@@ -78,15 +78,22 @@ ping_extractor <- function(
         bt2_al_conc <- paste0("--al-conc ", results.directory, sequence, "_KIR_%.fastq")
       }
       
-      bt2_un <- "--un dump.me"
+      bt2_un <- paste0("--un ",results.directory,sequence, ".dump.me")
       
       cat(sequence,"\n\n")
-      cat("bowtie2", bt2_p, bt2_5, bt2_3, bt2_L, bt2_i, bt2_min_score, bt2_I, bt2_X, bt2_x, bt2_1, bt2_2, bt2_stream, bt2_al_conc, bt2_un)
-      system2("bowtie2", c(bt2_p, bt2_5, bt2_3, bt2_L, bt2_i, bt2_min_score, bt2_I, bt2_X, bt2_x, bt2_1, bt2_2, bt2_stream, bt2_al_conc, bt2_un))
+      cat("bowtie2", bt2_p, bt2_5, bt2_3, bt2_L, bt2_i, bt2_min_score, bt2_I, bt2_X, bt2_x, bt2_1, bt2_2, bt2_stream, bt2_al_conc, bt2_un,"\n\n")
+
+
+      if(system("which bowtie2", intern=FALSE, ignore.stdout=TRUE, ignore.stderr=TRUE) == '0'){
+        system2("bowtie2", c(bt2_p, bt2_5, bt2_3, bt2_L, bt2_i, bt2_min_score, bt2_I, bt2_X, bt2_x, bt2_1, bt2_2, bt2_stream, bt2_al_conc, bt2_un))
+      }else{
+        cat("\n\nbowtie2 not found in path\n\nExiting!!\n\n")
+        q()
+      }
       cat("\n\n")
       
-      file.remove(paste0(sequence, ".temp"))
-      file.remove(paste0("dump.me"))
+      file.remove(bt2_stream)
+      file.remove(bt2_un)
     }
       
     for(sample in sequence.list) {
